@@ -1,0 +1,39 @@
+---
+- name: Install required rpms
+  dnf:
+    name:
+      - libvirt-devel
+      - gcc
+      - python3-devel
+      - python3-virtualenv
+      - python3-cryptography
+
+- name: Create python venv and install modules
+  pip:
+    name:
+      - sushy-tools
+      - libvirt-python
+      - cryptography
+    virtualenv: "{{ sushy_dir }}"
+
+- name: Create sushy dir
+  file:
+    state: directory
+    path: "{{ sushy_dir }}"
+
+- name: Template sushy.conf
+  template:
+    src: sushy.conf.j2
+    dest: "{{ sushy_dir }}/sushy.conf"
+
+- name: Template systemd unit
+  template:
+    src: sushy.service.j2
+    dest: "/etc/systemd/system/sushy.service"
+
+- name: Enable and start sushy
+  systemd:
+    name: sushy.service
+    state: started
+    enabled: yes
+    daemon_reload: yes

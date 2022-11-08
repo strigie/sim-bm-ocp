@@ -1,0 +1,12 @@
+server clock.corp.redhat.com iburst
+stratumweight 0
+driftfile /var/lib/chrony/drift
+rtcsync
+makestep 10 3
+bindcmdaddress ::
+keyfile /etc/chrony.keys
+#noclientlog
+logchange 0.5
+logdir /var/log/chrony
+allow {{ libvirt.cidr4 }}
+allow {{ libvirt.cidr6 }}

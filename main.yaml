@@ -1,0 +1,39 @@
+- hosts: kvm_host
+  tasks:
+    - include_role:
+        name: x509
+    - include_role:
+        name: libvirt
+    - include_role:
+        name: sushy
+#    - include_role:
+#        name: registry
+    - include_role:
+        name: dnsmasq
+    - include_role:
+        name: radvd
+    - include_role:
+        name: apache
+    - include_role:
+        name: chrony
+    - include_role:
+        name: oc
+#    - include_role:
+#        name: mirror_repo
+
+- hosts: control
+  gather_facts: no
+  tasks:
+    - name: Create VMs
+      include_role: 
+        name: boot_vm
+        apply:
+          delegate_to: "{{ groups['kvm_host'] | first }}"
+      vars:
+        ansible_become: yes
+      when: state is not defined or state == 'present'
+
+- hosts: kvm_host
+  tasks:
+    - include_role:
+        name: prepare_install

@@ -1,0 +1,67 @@
+---
+- name: install libvirt
+  dnf:
+    name:
+      - libvirt-client
+      - libvirt
+      - qemu-kvm
+      - virt-install
+      - python3-lxml
+      - python3-libselinux
+      - python3-policycoreutils
+    state: latest
+
+- name: (re)start libvirt daemon
+  service:
+    name: libvirtd
+    state: restarted
+
+- name: check if openshift network already exists
+  virt_net:
+    command: list_nets
+  register: all_nets
+
+- name: destroy old {{ libvirt.name }}
+  virt_net:
+    command: destroy
+    name: "{{ libvirt.name }}"
+  when: libvirt.name in all_nets.list_nets
+
+- name: undefine old openshift network
+  virt_net:
+    command: undefine
+    name: "{{ libvirt.name }}"
+  when: libvirt.name in all_nets.list_nets
+
+- name: Allow router advertisment on libvirt network
+  sysctl:
+    name: "net.ipv6.conf.all.accept_ra"
+    value: 2
+
+- name: define openshift network
+  virt_net:
+    command: define
+    name: "{{ libvirt.name }}"
+    xml: "{{ lookup('template', 'openshift.xml.j2')}}"
+
+- name: start openshift
+  virt_net:
+    command: create
+    name: "{{ libvirt.name }}"
+    state: active
+
+- name: firewalld open ports for libvirt
+  firewalld:
+    zone: libvirt
+    port: "{{ item }}"
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop:
+    - 5000/tcp
+    - 8000/tcp
+    - 9080/tcp
+    - 123/tcp
+    - 123/udp
+    - 53/tcp
+    - 53/udp

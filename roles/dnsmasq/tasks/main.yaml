@@ -1,0 +1,64 @@
+---
+- name: Install rpms
+  dnf:
+    name: dnsmasq
+
+- name: Create directory for dnsmasq config
+  file:
+    path: "{{ workspace }}/dnsmasq"
+    state: directory
+    recurse: yes
+
+- name: Template dnsmasq.conf
+  template:
+    src: dnsmasq.conf.j2
+    dest: "{{ workspace }}/dnsmasq/dnsmasq.conf"
+
+- name: Template hosts.hostfile
+  template:
+    src: hosts.hostfile.j2
+    dest: "{{ workspace }}/dnsmasq/hosts.hostsfile"
+
+- name: Template upstream-resolv.conf
+  template:
+    src: upstream-resolv.conf.j2
+    dest: "{{ workspace }}/dnsmasq/upstream-resolv.conf"
+
+- name: Template systemd unit
+  template:
+    src: dnsmasq-sim.service.j2
+    dest: /etc/systemd/system/dnsmasq-sim.service
+
+- name: Touch leases file
+  file:
+    path: "{{ workspace }}/dnsmasq/hosts.leases"
+    state: touch
+    selevel: s0
+    serole: object_r
+    setype: dnsmasq_var_run_t
+    seuser: system_u
+
+- name: Start and enable dnsmasq
+  systemd:
+    name: dnsmasq-sim.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Enable NetworkManager dnsmasq
+  copy:
+    dest: /etc/NetworkManager/conf.d/00-use-dnsmasq.conf
+    content: |
+      [main]
+      dns=dnsmasq
+
+- name: Forward all of our local domain to our dnsmasq
+  copy:
+    dest: /etc/NetworkManager/dnsmasq.d/00-bm-sim.conf
+    content: |
+      server=/{{ net.domain }}/{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}
+
+- name: restart NetworkManager
+  service:
+    name: NetworkManager
+    state: restarted

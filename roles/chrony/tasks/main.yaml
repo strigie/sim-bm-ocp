@@ -1,0 +1,16 @@
+---
+- name: Install chrony
+  dnf:
+    name: chrony
+
+- name: Template chrony config
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+
+- name: Start and enable chrony
+  systemd:
+    name: chronyd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

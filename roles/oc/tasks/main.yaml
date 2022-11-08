@@ -1,0 +1,41 @@
+---
+- name: Create docker config directory
+  file:
+    state: directory
+    path: "{{ ansible_user_dir }}/.docker/"
+    mode: 0700
+
+- name: Create root pull secret
+  copy:
+    dest: "{{ ansible_user_dir }}/.docker/config.json"
+    content: "{{ key.pullsecret }}"
+
+- name: Create bin dir
+  file:
+    state: directory
+    path: "{{ workspace }}/bin/"
+
+- name: Get openshift clients
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift.install_version }}/openshift-client-linux-{{ openshift.install_version }}.tar.gz"
+    dest: "/tmp/oc.tar.gz"
+
+- name: Extract Openshift clients
+  unarchive:
+    src: "/tmp/oc.tar.gz"
+    dest: "{{ workspace }}/bin/"
+    remote_src: yes
+    include:
+      - oc
+    selevel: s0
+    serole: object_r
+    setype: bin_t
+    seuser: system_u
+    mode: 0755
+
+- name: Symlink kubectl
+  file:
+    state: link
+    src: "{{ workspace }}/bin/oc"
+    dest: "{{ workspace }}/bin/kubectl"
+      

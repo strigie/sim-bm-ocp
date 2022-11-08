@@ -1,0 +1,29 @@
+interface {{ libvirt.name }}
+{
+	AdvSendAdvert on;
+	IgnoreIfMissing on;
+        AdvManagedFlag on;
+
+	MinRtrAdvInterval 30;
+	MaxRtrAdvInterval 100;
+
+	AdvDefaultPreference low;
+        AdvDefaultLifetime 9000;
+
+	AdvHomeAgentFlag off;
+
+	prefix {{ libvirt.cidr6 }}
+	{
+		AdvOnLink on;
+		AdvAutonomous on;
+		AdvRouterAddr on;
+	};
+
+	route ::/0
+	{
+		AdvRoutePreference low;
+		AdvRouteLifetime 9000;
+                RemoveRoute on;
+	};
+
+};

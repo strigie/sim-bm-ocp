@@ -1,0 +1,53 @@
+---
+- name: Install packages
+  dnf:
+    name:
+      - podman
+      - httpd-tools
+
+- name: Enable and start podman
+  systemd:
+    name: podman.service
+    enabled: yes
+    state: started
+
+- name: Create directory for registry
+  file:
+    path: "{{ registry_dir }}/{{ item }}"
+    state: directory
+    recurse: yes
+  loop:
+    - conf
+    - certs
+    - auth
+    - data
+
+- name: Copy x509
+  copy:
+    src: "{{ workspace }}/x509/{{ item.src }}"
+    dest: "{{ registry_dir }}/certs/{{ item.dest }}"
+    remote_src: yes
+  loop:
+    - { src: 'bmsim.crt', dest: 'registry.crt' }
+    - { src: 'bmsim.key', dest: 'registry.key' }
+
+# Ansible modules for this needs to many dependencies to make it worthwhile
+- name: Create htpasswd file
+  command: htpasswd -Bbc "{{ registry_dir}}/auth/htpasswd" "{{ registry.user }}" "{{ registry.password }}" 
+
+- name: Create registry config
+  template:
+    src: config.yaml.j2
+    dest: "{{ registry_dir }}/conf/config.yaml"
+
+- name: Template systemd unit
+  template:
+    src: podman-registry.service.j2
+    dest: "/etc/systemd/system/podman-registry.service"
+
+- name: Enable and start registry
+  systemd:
+    name: podman-registry.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

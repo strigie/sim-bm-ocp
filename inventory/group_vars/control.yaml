@@ -1,0 +1,10 @@
+ansible_host: "{{ libvirt.cidr4 | ansible.netcommon.nthhost(4 + groups['control'].index(inventory_hostname)) }}"
+ansible_host6: "{{ libvirt.cidr6 | ansible.netcommon.nthhost(4 + groups['control'].index(inventory_hostname)) }}"
+spec:
+  cpu: 16
+  ram: 32384
+  disk: 128
+  disk_cache: unsafe
+  disk2: 32
+  disk2_cache: unsafe
+  mac: "{{ '52:54:00' | community.general.random_mac(seed=inventory_hostname) }}"

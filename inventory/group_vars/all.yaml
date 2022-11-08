@@ -1,0 +1,24 @@
+openshift:
+  name: tirpitz
+  install_version: 4.11.10
+  coreos_version:  4.11.9
+key:
+  pullsecret: "{{ lookup('file', '../pull-secret.json') }}"
+  sshkey: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+# OpenShift Network
+net:
+  domain: lab
+  cluster6_cidr: fc01::/48
+  cluster6_prefx: 64
+  cluster4_cidr: 192.168.0.0/16
+  cluster4_prefx: 24
+  service6: fd02::/112
+  service4: 172.20.0.0/16
+# libvirt net
+libvirt:
+  name: openshift0
+  cidr6: fd12:dead:beef:2::/64
+  cidr4: 172.30.0.0/24
+registry:
+  user: openshift
+  password: openshift

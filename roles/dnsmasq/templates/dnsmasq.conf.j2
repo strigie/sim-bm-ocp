@@ -1,0 +1,38 @@
+strict-order
+bogus-priv
+#dhcp-authoritative
+dhcp-range={{ libvirt.name }},{{ libvirt.cidr6 | ansible.netcommon.nthhost(11) }},{{ libvirt.cidr6 | ansible.netcommon.nthhost(31) }},4h
+dhcp-option={{ libvirt.name }},option6:dns-server,{{ libvirt.cidr6 | ansible.netcommon.nthhost(1) }}
+dhcp-range={{ libvirt.name }},{{ libvirt.cidr4 | ansible.netcommon.nthhost(11) }},{{ libvirt.cidr4 | ansible.netcommon.nthhost(31) }},{{ libvirt.cidr4 | ansible.netcommon.ipaddr('netmask') }},4h
+dhcp-option={{ libvirt.name }},option:dns-server,{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}
+dhcp-option={{ libvirt.name }},option:router,{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}
+#rhcos doesnt work with this (IPv6) yet, but it doesn't hurt to have it
+#https://bugzilla.redhat.com/show_bug.cgi?id=1800901
+dhcp-option={{ libvirt.name }},option6:ntp-server,[::]
+
+#no-resolv
+bind-dynamic
+interface={{ libvirt.name }}
+except-interface=lo
+log-dhcp
+dhcp-lease-max=20
+
+domain={{ net.domain }}
+
+address=/apps.{{ openshift.name }}.{{ net.domain }}/{{ libvirt.cidr6 | ansible.netcommon.nthhost(2) }}
+address=/apps.{{ openshift.name }}.{{ net.domain }}/{{ libvirt.cidr4 | ansible.netcommon.nthhost(2) }}
+host-record=api.{{ openshift.name }}.{{ net.domain }},{{ libvirt.cidr4 | ansible.netcommon.nthhost(3) }},{{ libvirt.cidr6 | ansible.netcommon.nthhost(3) }}
+host-record={{ ansible_fqdn }},{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }},{{ libvirt.cidr6 | ansible.netcommon.nthhost(1) }}
+{% for c in groups['control'] %}
+host-record={{ c }}.{{ net.domain }},{{ hostvars[c].ansible_host }},{{ hostvars[c].ansible_host6 }}
+ptr-record={{ hostvars[c].ansible_host | ansible.netcommon.ipaddr('revdns') }},{{ c }}.{{ net.domain }}
+ptr-record={{ hostvars[c].ansible_host6 | ansible.netcommon.ipaddr('revdns') }},{{ c }}.{{ net.domain }}
+{% endfor %}
+{% for w in groups['worker'] %}
+host-record={{ w }}.{{ net.domain }},{{ hostvars[w].ansible_host }},{{ hostvars[w].ansible_host6 }}
+ptr-record={{ hostvars[w].ansible_host | ansible.netcommon.ipaddr('revdns') }},{{ w }}.{{ net.domain }}
+ptr-record={{ hostvars[w].ansible_host6 | ansible.netcommon.ipaddr('revdns') }},{{ w }}.{{ net.domain }}
+{% endfor %}
+
+dhcp-hostsfile={{ workspace }}/dnsmasq/hosts.hostsfile
+dhcp-leasefile={{ workspace }}/dnsmasq/hosts.leases

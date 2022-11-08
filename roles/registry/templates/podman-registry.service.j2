@@ -1,0 +1,16 @@
+[Unit]
+Description=Podman container docker registry
+After=network.target syslog.target
+
+[Service]
+Type=simple
+TimeoutStartSec=5m
+WorkingDirectory=/root
+ExecStartPre=-/usr/bin/podman rm -f registry
+ExecStart=/usr/bin/podman run --name registry --hostname registry --net host -v {{ registry_dir }}/auth:/auth:Z -v {{ registry_dir }}/certs:/certs:z -v {{ registry_dir }}/data:/registry:z -v {{ registry_dir }}/conf/config.yaml:/etc/docker/registry/config.yml:z -v {{ registry_dir }}/auth/htpasswd:/auth/htpasswd:z docker.io/tellerulam/registry:2.7.1
+Restart=always
+RestartSec=30s
+StartLimitInterval=60s
+StartLimitBurst=99
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=The Apache HTTP Server
+Wants=httpd-ocp.service
+After=network.target remote-fs.target nss-lookup.target httpd-init.service
+Documentation=man:httpd.service(8)
+
+[Service]
+Type=notify
+Environment=LANG=C
+
+ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND -f {{ workspace }}/apache/conf/httpd.conf
+ExecReload=/usr/sbin/httpd $OPTIONS -k graceful -f {{ workspace }}/apache/conf/httpd.conf
+# Send SIGWINCH for graceful stop
+KillSignal=SIGWINCH
+KillMode=mixed
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

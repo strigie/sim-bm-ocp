@@ -1,0 +1,9 @@
+[Unit]
+Description=DNS/DHCP server for Openshift IPv6
+After=network.target
+[Service]
+User=root
+Group=root
+ExecStart=/usr/sbin/dnsmasq -k --conf-file={{ workspace }}/dnsmasq/dnsmasq.conf
+[Install]
+WantedBy=multi-user.target

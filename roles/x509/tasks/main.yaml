@@ -1,0 +1,69 @@
+- name: Create directory for PKI
+  file:
+    path: "{{ workspace }}/x509"
+    state: directory
+    recurse: yes
+
+- name: Install Python crypto
+  dnf:
+    name: python3-cryptography
+
+# TODO: passphrase!
+- name: Generate private key for bmsim CA
+  community.crypto.openssl_privatekey:
+    path: "{{ workspace }}/x509/bmsimca.key"
+    size: "{{ key_size | default('4096') }}"
+    type: "{{ key_type | default('RSA') }}"
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ workspace }}/x509/bmsimca.key"
+    common_name: BMSIM CA
+    use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: yes
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: ca_csr
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ workspace }}/x509/bmsimca.crt"
+    csr_content: "{{ ca_csr.csr }}"
+    privatekey_path: "{{ workspace }}/x509/bmsimca.key"
+    provider: selfsigned
+
+- name: Generate private key for bmsim
+  community.crypto.openssl_privatekey:
+    path: "{{ workspace }}/x509/bmsim.key"
+    size: "{{ key_size | default('2048') }}"
+    type: "{{ key_type | default('RSA') }}"
+
+- name: Create certificate signing request (CSR) for new certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ workspace }}/x509/bmsim.key"
+    subject_alt_name:
+      - "DNS:{{ ansible_host }}"
+  register: csr
+
+- name: Generate cert for bmsim
+  community.crypto.x509_certificate:
+    csr_content: "{{ csr.csr }}"
+    provider: ownca
+    path: "{{ workspace }}/x509/bmsim.crt"
+    ownca_path: "{{ workspace }}/x509/bmsimca.crt"
+    ownca_privatekey_path: "{{ workspace }}/x509/bmsimca.key"
+    ownca_not_after: +365d  # valid for one year
+    ownca_not_before: "-1d"  # valid since yesterday
+
+
+- name: Copy CA cert into OS trust bundle
+  copy:
+    src: "{{ workspace }}/x509/bmsimca.crt"
+    dest: /etc/pki/ca-trust/source/anchors
+    remote_src: yes
+
+- name: Update trust bundle
+  command: update-ca-trust extract

@@ -1,0 +1,1 @@
+sushy_dir: "{{ workspace }}/sushy"

@@ -1,0 +1,5 @@
+{% for ns in ansible_dns.nameservers %}
+{% if ns %}
+nameserver {{ ns }}
+{% endif %}
+{% endfor %}

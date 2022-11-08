@@ -1,0 +1,53 @@
+---
+- name: Install apache httpd
+  dnf:
+    name: httpd
+
+- name: Create directory for apache httpd
+  file:
+    path: "{{ workspace }}/apache/{{ item.name }}"
+    state: directory
+    recurse: yes
+    selevel: s0
+    serole: object_r
+    setype: "{{ item.setype }}"
+    seuser: system_u
+  loop:
+    - { name: conf, setype: httpd_config_t }
+    - { name: data, setype: httpd_sys_content_t }
+    - { name: logs, setype: httpd_log_t }
+    - { name: run, setype: httpd_var_run_t }
+    - { name: state, setype: httpd_var_lib_t }
+
+- name: Symlink modules
+  file:
+    state: link
+    dest: "{{ workspace }}/apache/{{ item.name }}"
+    src: "{{ item.src }}"
+  loop:
+    - { name: modules, src: /usr/lib64/httpd/modules, setype: httpd_modules_t }
+    - { name: "conf.modules.d", src: "/etc/httpd/conf.modules.d", setype: httpd_config_t }  
+
+- name: semanage port 9080
+  community.general.seport:
+    ports: 9080
+    proto: tcp
+    setype: http_port_t
+    state: present 
+
+- name: Template unit file
+  template: 
+    src: apacheocp.service.j2
+    dest: /etc/systemd/system/apacheocp.service
+
+- name: Template httpd config file
+  template:
+    src: httpd.conf.j2
+    dest: "{{ workspace }}/apache/conf/httpd.conf"
+
+- name: Start and enable apache
+  systemd:
+    name: apacheocp.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

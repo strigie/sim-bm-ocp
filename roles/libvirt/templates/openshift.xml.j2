@@ -1,0 +1,10 @@
+<network>
+  <name>{{ libvirt.name }}</name>
+  <bridge name='{{ libvirt.name }}' stp='on' delay='0'/>
+  <forward mode="nat"/>
+  <dns enable="no"/>
+  <ip family="ipv6" address='{{ libvirt.cidr6 | ansible.netcommon.nthhost(1) }}' prefix='{{ libvirt.cidr6 | ansible.netcommon.ipaddr('prefix') }}' >
+  </ip>
+  <ip family="ipv4" address='{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}' netmask='{{ libvirt.cidr4 | ansible.netcommon.ipaddr('netmask') }}' >
+  </ip>
+</network>
