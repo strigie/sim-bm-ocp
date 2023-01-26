@@ -28,10 +28,14 @@ networking:
 platform:
   baremetal:
     externalBridge: {{ libvirt.name }}
-    bootstrapProvisioningIP: {{ libvirt.cidr4 | ansible.netcommon.nthhost(20) }}
+#    bootstrapProvisioningIP: {{ libvirt.cidr4 | ansible.netcommon.nthhost(20) }}
     provisioningNetwork: "Disabled"
-    apiVIP: {{ libvirt.cidr4 | ansible.netcommon.nthhost(3) }}
-    ingressVIP: {{ libvirt.cidr4 | ansible.netcommon.nthhost(2) }}
+    apiVIPs:
+      - {{ libvirt.cidr4 | ansible.netcommon.nthhost(3) }}
+      - {{ libvirt.cidr6 | ansible.netcommon.nthhost(3) }}
+    ingressVIPs:
+      - {{ libvirt.cidr4 | ansible.netcommon.nthhost(2) }}
+      - {{ libvirt.cidr6 | ansible.netcommon.nthhost(2) }}
 #    clusterOSImage: "http://[{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}]:9080/{{ print_stream['architectures']['x86_64']['artifacts']['openstack']['formats']['qcow2.gz']['disk']['location'] | basename }}?sha256={{ print_stream['architectures']['x86_64']['artifacts']['openstack']['formats']['qcow2.gz']['disk']['uncompressed-sha256'] }}"
 #    bootstrapOSImage: "http://[{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}]:9080/{{ print_stream['architectures']['x86_64']['artifacts']['qemu']['formats']['qcow2.gz']['disk']['location'] | basename }}?sha256={{ print_stream['architectures']['x86_64']['artifacts']['qemu']['formats']['qcow2.gz']['disk']['uncompressed-sha256'] }}"
     hosts:

@@ -1,7 +1,7 @@
 openshift:
-  name: tirpitz
-  install_version: 4.11.10
-  coreos_version:  4.11.9
+  name: falcon
+  install_version: 4.12.1
+#  coreos_version:  4.12.0
 key:
   pullsecret: "{{ lookup('file', '../pull-secret.json') }}"
   sshkey: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

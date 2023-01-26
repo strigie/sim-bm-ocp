@@ -4,8 +4,8 @@ interface {{ libvirt.name }}
 	IgnoreIfMissing on;
         AdvManagedFlag on;
 
-	MinRtrAdvInterval 30;
-	MaxRtrAdvInterval 100;
+	MinRtrAdvInterval 3;
+	MaxRtrAdvInterval 10;
 
 	AdvDefaultPreference low;
         AdvDefaultLifetime 9000;
@@ -16,6 +16,7 @@ interface {{ libvirt.name }}
 	{
 		AdvOnLink on;
 		AdvAutonomous on;
+#		AdvAutonomous off;
 		AdvRouterAddr on;
 	};
 
