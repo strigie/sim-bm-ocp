@@ -8,7 +8,8 @@ dhcp-option={{ libvirt.name }},option:dns-server,{{ libvirt.cidr4 | ansible.netc
 dhcp-option={{ libvirt.name }},option:router,{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}
 #rhcos doesnt work with this (IPv6) yet, but it doesn't hurt to have it
 #https://bugzilla.redhat.com/show_bug.cgi?id=1800901
-dhcp-option={{ libvirt.name }},option6:ntp-server,[::]
+#dhcp-option={{ libvirt.name }},option6:ntp-server,[::]
+dhcp-option={{ libvirt.name }},option:ntp-server,{{ libvirt.cidr4 | ansible.netcommon.nthhost(1) }}
 
 #no-resolv
 bind-dynamic

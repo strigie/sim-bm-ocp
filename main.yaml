@@ -6,8 +6,8 @@
         name: libvirt
     - include_role:
         name: sushy
-#    - include_role:
-#        name: registry
+    - include_role:
+        name: registry
     - include_role:
         name: dnsmasq
     - include_role:

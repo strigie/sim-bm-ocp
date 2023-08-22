@@ -61,8 +61,6 @@ platform:
 #    - {{ ansible_host }}:5000/ocp4
 #    - {{ ansible_host }}:5000/ocp4/release
 #    source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
-additionalTrustBundle: |
-  {{ ca.content | b64decode | indent(width=2)}}
 sshKey: '{{ key.sshkey }}'
 #pullSecret: '{"auths":{"{{ ansible_host }}:5000":{"auth":"{{ (registry.user + ':' + registry.password) | b64encode }}"}}}'
 pullSecret: '{{ key.pullsecret | to_json }}'

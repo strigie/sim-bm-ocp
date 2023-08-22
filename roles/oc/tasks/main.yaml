@@ -17,8 +17,10 @@
 
 - name: Get openshift clients
   get_url:
-    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift.install_version }}/openshift-client-linux-{{ openshift.install_version }}.tar.gz"
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp-dev-preview/{{ openshift.install_version }}/openshift-client-linux-{{ openshift.install_version }}.tar.gz"
+#    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ openshift.install_version }}/openshift-client-linux-{{ openshift.install_version }}.tar.gz"
     dest: "/tmp/oc.tar.gz"
+    force: true
 
 - name: Extract Openshift clients
   unarchive:
@@ -38,4 +40,3 @@
     state: link
     src: "{{ workspace }}/bin/oc"
     dest: "{{ workspace }}/bin/kubectl"
-      

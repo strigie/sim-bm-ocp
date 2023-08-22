@@ -2,6 +2,7 @@ interface {{ libvirt.name }}
 {
 	AdvSendAdvert on;
 	IgnoreIfMissing on;
+#        AdvManagedFlag off;
         AdvManagedFlag on;
 
 	MinRtrAdvInterval 3;
@@ -15,8 +16,8 @@ interface {{ libvirt.name }}
 	prefix {{ libvirt.cidr6 }}
 	{
 		AdvOnLink on;
-		AdvAutonomous on;
-#		AdvAutonomous off;
+#		AdvAutonomous on;
+		AdvAutonomous off;
 		AdvRouterAddr on;
 	};
 

@@ -5,7 +5,6 @@
       - libvirt-devel
       - gcc
       - python3-devel
-      - python3-virtualenv
       - python3-cryptography
 
 - name: Create python venv and install modules
@@ -15,6 +14,7 @@
       - libvirt-python
       - cryptography
     virtualenv: "{{ sushy_dir }}"
+    virtualenv_command: python -m venv
 
 - name: Create sushy dir
   file:
@@ -34,6 +34,6 @@
 - name: Enable and start sushy
   systemd:
     name: sushy.service
-    state: started
+    state: restarted
     enabled: yes
     daemon_reload: yes
